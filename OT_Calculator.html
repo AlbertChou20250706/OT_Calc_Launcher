@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Albert-Style OT Calculator v1.3.0</title>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#0e162a; --muted:#93a4c2; --text:#eaf2ff;
+    --teal:#10b981; --amber:#f59e0b; --red:#ef476f; --green:#22c55e;
+    --card:#0c1426; --border:#1e2a48; --ink:#0a1323; --glass:rgba(255,255,255,0.04);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:radial-gradient(1200px 600px at 10% -10%, rgba(16,185,129,.12), transparent 40%),
+             radial-gradient(1200px 600px at 110% 10%, rgba(59,130,246,.12), transparent 45%), var(--bg);
+    color:var(--text);
+    font-family:"Noto Sans TC","Noto Sans JP","Microsoft JhengHei","Yu Gothic UI","Meiryo","Segoe UI",Roboto,system-ui,-apple-system,sans-serif
+  }
+  header{padding:22px 16px;border-bottom:1px solid var(--border);background:linear-gradient(180deg, rgba(255,255,255,.04), transparent 70%)}
+  .container{max-width:1240px;margin:0 auto;padding:16px}
+  .titlebar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .title{font-size:22px;font-weight:800;letter-spacing:.2px}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;font-size:12px;border:1px solid var(--border);background:var(--glass)}
+  .b-info{color:var(--teal)}
+  .rowbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+
+  /* 語言切換按鈕（與色票分開定義） */
+  .lang button{
+    border:1px solid var(--border);
+    background:var(--glass);
+    color:var(--text);
+    padding:8px 10px;border-radius:12px;cursor:pointer
+  }
+  .lang button.active{ border-color:var(--teal) }
+
+  .grid{display:grid;gap:16px}
+  @media(min-width:1000px){.grid.two{grid-template-columns:1.05fr .95fr}}
+  .panel{background:rgba(16,24,44,.6);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 10px 28px rgba(0,0,0,.25)}
+  h2{font-size:15px;margin:0 0 10px}
+  label{font-size:12px;color:var(--muted)}
+  input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--ink);color:var(--text);outline:none}
+  input::placeholder{color:#5a6a8a}
+  table{width:100%;border-collapse:separate;border-spacing:0 8px}
+  thead th{font-size:12px;color:var(--muted);font-weight:700;text-align:left;padding:0 8px}
+  tbody tr{background:var(--card);border:1px solid var(--border)}
+  tbody td{padding:8px}
+  .btn{border:none;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;color:#021012;background:var(--teal);transition:transform .06s ease, opacity .15s}
+  .btn:hover{opacity:.95}.btn:active{transform:translateY(1px)}
+  .btn.secondary{background:#21324c;color:var(--text)}
+  .btn.warn{background:var(--amber)}.btn.danger{background:var(--red);color:#fff}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px}
+  .card .big{font-size:26px;font-weight:900}
+  .muted{color:var(--muted)}
+  .sep{height:1px;background:var(--border);margin:12px 0}
+  .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .kpi{background:var(--glass);border:1px solid var(--border);border-radius:14px;padding:12px}
+  .kpi .k{font-size:12px;color:var(--muted)} .kpi .v{font-size:20px;font-weight:900}
+  .footer{padding:16px;color:var(--muted);font-size:12px;text-align:center;border-top:1px solid var(--border);margin-top:18px}
+  .weekboard{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+  .wcard{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px}
+  .whead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .weekday{display:grid;grid-template-columns:1fr auto auto;gap:6px;font-size:14px;padding:6px 8px;border-radius:10px;background:var(--glass)}
+  .weekday .name{color:#bcd3ff}
+
+  /* 顏色主題色票：亮色預覽，不用黑玻璃背景 */
+  .theme .sw{
+    width:28px;height:28px;border-radius:10px;border:1px solid var(--border);
+    cursor:pointer;display:inline-block;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 0 0 1px rgba(0,0,0,.35);
+  }
+  .theme .sw.active{ box-shadow: 0 0 0 2px rgba(16,185,129,.6), 0 0 0 1px rgba(0,0,0,.35) }
+
+  .theme .sw.teal{background:
+    radial-gradient(circle at 30% 30%, #34d399 28%, transparent 45%),
+    radial-gradient(circle at 70% 70%, #60a5fa 30%, transparent 48%), #0b1220;}
+  .theme .sw.violet{background:
+    radial-gradient(circle at 30% 30%, #a78bfa 30%, transparent 48%),
+    radial-gradient(circle at 70% 70%, #38bdf8 28%, transparent 45%), #0b1020;}
+  .theme .sw.rose{background:
+    radial-gradient(circle at 30% 30%, #fb7185 30%, transparent 48%),
+    radial-gradient(circle at 70% 70%, #f472b6 28%, transparent 45%), #110b14;}
+  .theme .sw.slate{background:
+    radial-gradient(circle at 30% 30%, #94a3b8 30%, transparent 48%),
+    radial-gradient(circle at 70% 70%, #60a5fa 28%, transparent 45%), #0b1220;}
+  .theme .sw.forest{background:
+    radial-gradient(circle at 30% 30%, #34d399 30%, transparent 48%),
+    radial-gradient(circle at 70% 70%, #16a34a 28%, transparent 45%), #07140f;}
+  .theme .sw.cocoa{background:
+    radial-gradient(circle at 30% 30%, #fb923c 30%, transparent 48%),
+    radial-gradient(circle at 70% 70%, #f59e0b 28%, transparent 45%), #120d08;}
+</style>
+</head>
+<body>
+<header>
+  <div class="container titlebar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div id="titleText" class="title">OT Calculator — Albert Style</div>
+      <div class="badge b-info">v1.3.0</div>
+    </div>
+    <div class="rowbar">
+      <div class="lang">
+        <button id="lang-zh" class="active">中文</button>
+        <button id="lang-en">EN</button>
+        <button id="lang-ja">日本語</button>
+      </div>
+      <div class="theme" id="themeBar" title="Theme">
+        <button class="sw teal"   data-theme="teal"></button>
+        <button class="sw violet" data-theme="violet"></button>
+        <button class="sw rose"   data-theme="rose"></button>
+        <button class="sw slate"  data-theme="slate"></button>
+        <button class="sw forest" data-theme="forest"></button>
+        <button class="sw cocoa"  data-theme="cocoa"></button>
+      </div>
+    </div>
+  </div>
+  <div class="container" id="ruleLine" style="color:#bcd3ff;font-size:13px;margin-top:6px">
+    規則：標準工時 8 小時；若 8 小時區間跨到 12:00–13:00，標準下班順延 1 小時。晚餐（預設 0.5h）後才開始計算加班。
+  </div>
+</header>
+
+<div class="container grid two">
+  <section class="panel">
+    <h2 id="hInput">① 輸入</h2>
+    <div class="btnrow">
+      <button class="btn" id="addRowBtn">+ 新增</button>
+      <button class="btn secondary" id="sampleBtn">載入範例</button>
+      <button class="btn warn" id="resetBtn">重設</button>
+      <button class="btn secondary" id="exportBtn">匯出 CSV</button>
+    </div>
+    <div style="overflow:auto;margin-top:6px">
+      <table>
+        <thead><tr>
+          <th id="thDate" style="width:24%">日期</th>
+          <th id="thIn"   style="width:19%">上班</th>
+          <th id="thOut"  style="width:19%">下班</th>
+          <th id="thNote" style="width:18%">備註</th>
+          <th id="thAct"  style="width:20%">動作</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="sep"></div>
+    <label id="lbStd">每日標準工時（小時）</label><input id="stdHours" type="number" step="0.25" value="8">
+    <label id="lbLunch">午休規則</label><input id="lunchRule" type="text" value="12:00-13:00" disabled>
+    <label id="lbDinner">晚餐（小時，OT 前置）</label><input id="dinnerHrs" type="number" step="0.25" value="0.5">
+    <label id="lbRound">可申請加班時數進位規則</label>
+    <select id="roundRule">
+      <option value="floor1">捨去到 1h（Floor to 1h）</option>
+      <option value="nearest1">四捨五入到 1h（Nearest 1h）</option>
+      <option value="ceil1">進位到 1h（Ceil to 1h）</option>
+      <option value="nearest0.5">四捨五入到 0.5h（Nearest 0.5h）</option>
+    </select>
+    <label id="lbMin">最低可申請（小時）</label><input id="minOt" type="number" step="0.25" value="1">
+    <div class="btnrow" style="margin-top:10px"><button class="btn" id="calcBtn">✓ 計算</button></div>
+  </section>
+
+  <section class="panel">
+    <h2 id="hResult">② 結果</h2>
+    <div class="summary">
+      <div class="kpi"><div class="k" id="kDaysT">天數</div><div class="v" id="kDays">0</div></div>
+      <div class="kpi"><div class="k" id="kNetT">總淨工時</div><div class="v" id="kNet">00:00</div></div>
+      <div class="kpi"><div class="k" id="kOTT">總 OT</div><div class="v" id="kOT">00:00</div></div>
+      <div class="kpi"><div class="k" id="kClaimT">可申請(小時)</div><div class="v" id="kClaim">0</div></div>
+    </div>
+    <div class="sep"></div>
+    <div class="cards" id="cards"></div>
+  </section>
+</div>
+
+<div class="container panel" style="margin-top:16px">
+  <h2 id="hWeek">③ 週彙總（週一～週六）</h2>
+  <div class="weekboard" id="weekBoard"></div>
+</div>
+
+<div class="footer" id="footerText">© 2025 OT Calc — Albert Style</div>
+
+<script>
+// ----- themes (bg only; buttons keep teal) -----
+const themes = {
+  teal  : 'radial-gradient(1200px 600px at 10% -10%, rgba(16,185,129,.12), transparent 40%), radial-gradient(1200px 600px at 110% 10%, rgba(59,130,246,.12), transparent 45%), #0b1220',
+  violet: 'radial-gradient(1200px 600px at 10% -10%, rgba(139,92,246,.18), transparent 40%), radial-gradient(1200px 600px at 110% 10%, rgba(14,165,233,.12), transparent 45%), #0b1020',
+  rose  : 'radial-gradient(1200px 600px at 10% -10%, rgba(244,63,94,.18), transparent 40%), radial-gradient(1200px 600px at 110% 10%, rgba(244,114,182,.12), transparent 45%), #110b14',
+  slate : 'radial-gradient(1200px 600px at 10% -10%, rgba(100,116,139,.18), transparent 40%), radial-gradient(1200px 600px at 110% 10%, rgba(96,165,250,.12), transparent 45%), #0b1220',
+  forest: 'radial-gradient(1200px 600px at 10% -10%, rgba(34,197,94,.18), transparent 40%), radial-gradient(1200px 600px at 110% 10%, rgba(21,128,61,.12), transparent 45%), #07140f',
+  cocoa : 'radial-gradient(1200px 600px at 10% -10%, rgba(251,146,60,.18), transparent 40%), radial-gradient(1200px 600px at 110% 10%, rgba(217,119,6,.12), transparent 45%), #120d08'
+};
+document.querySelectorAll('#themeBar .sw').forEach(b=>{
+  b.onclick=()=>{ document.body.style.background = themes[b.dataset.theme];
+                  document.querySelectorAll('#themeBar .sw').forEach(x=>x.classList.remove('active'));
+                  b.classList.add('active'); };
+});
+
+// ----- i18n -----
+const i18n = {
+  zh:{ appTitle:"Albert-Style OT Calculator v1.3.0",
+    input:"① 輸入", result:"② 結果", week:"③ 週彙總（週一～週六）",
+    rule:"規則：標準工時 8 小時；若 8 小時區間跨到 12:00–13:00，標準下班順延 1 小時。晚餐（預設 0.5h）後才開始計算加班。",
+    add:"+ 新增", load:"載入範例", reset:"重設", calc:"✓ 計算", export:"匯出 CSV",
+    date:"日期", in:"上班", out:"下班", note:"備註", act:"動作",
+    std:"每日標準工時（小時）", lunch:"午休規則", dinner:"晚餐（小時，OT 前置）",
+    round:"可申請加班時數進位規則", min:"最低可申請（小時）",
+    days:"天數", tnet:"總淨工時", tot:"總 OT", tclaim:"可申請(小時)", del:"刪除",
+    card:{stdEnd:"標準下班", otWin:"OT 時段", work:"淨工時", total:"總時數", lunch:"午休"},
+    week:{title:"第 {w} 週", total:"本週合計", ot:"OT", claim:"可申請", daynames:["週一","週二","週三","週四","週五","週六"]},
+    footer:"© 2025 OT Calc — Albert Style"
+  },
+  en:{ appTitle:"Albert-Style OT Calculator v1.3.0",
+    input:"① Input", result:"② Result", week:"③ Weekly summary (Mon–Sat)",
+    rule:"Rule: 8h standard; if the 8h window overlaps 12:00–13:00, standard end shifts by 1h. OT starts after dinner (default 0.5h).",
+    add:"+ Add Row", load:"Load Sample", reset:"Reset", calc:"✓ Calculate", export:"Export CSV",
+    date:"Date", in:"Clock In", out:"Clock Out", note:"Notes", act:"Actions",
+    std:"Standard Hours (per day)", lunch:"Lunch Rule", dinner:"Dinner (hours, before OT)",
+    round:"Rounding Rule for Claimable OT", min:"Minimum Claimable OT (hours)",
+    days:"Days", tnet:"Total Net", tot:"Total OT", tclaim:"Claim OT", del:"Delete",
+    card:{stdEnd:"Std End", otWin:"OT Window", work:"Work", total:"Total", lunch:"Lunch"},
+    week:{title:"Week {w}", total:"Weekly Total", ot:"OT", claim:"Claim", daynames:["Mon","Tue","Wed","Thu","Fri","Sat"]},
+    footer:"© 2025 OT Calc — Albert Style"
+  },
+  ja:{ appTitle:"Albert-Style 残業計算 v1.3.0",
+    input:"① 入力", result:"② 結果", week:"③ 週集計（月〜土）",
+    rule:"規則：標準労働は8時間。8時間の枠が12:00–13:00に重なる場合、定時は1時間後ろ倒し。夕食（既定0.5h）後から残業計算。",
+    add:"+ 追加", load:"サンプル", reset:"リセット", calc:"✓ 計算", export:"CSV 書き出し",
+    date:"日付", in:"出勤", out:"退勤", note:"メモ", act:"操作",
+    std:"標準労働（時間/日）", lunch:"昼休み", dinner:"夕食（時間、残業前）",
+    round:"申請残業の丸め規則", min:"申請の最小（時間）",
+    days:"日数", tnet:"総実働", tot:"総残業", tclaim:"申請(h)", del:"削除",
+    card:{stdEnd:"定時", otWin:"残業時間帯", work:"実働", total:"総時間", lunch:"昼休み"},
+    week:{title:"第 {w} 週", total:"週合計", ot:"残業", claim:"申請", daynames:["月","火","水","木","金","土"]},
+    footer:"© 2025 OT Calc — Albert Style"
+  }
+};
+let lang='zh';
+function L(){return i18n[lang]}
+
+// ----- helpers -----
+const $ = s => document.querySelector(s);
+const fmtHM = m => { m=Math.max(0,Math.round(m)); const h=Math.floor(m/60), mm=m%60; return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0'); };
+const toMins = v => { const m=/^([01]?\d|2[0-3]):([0-5]\d)$/.exec(v||''); return m? (parseInt(m[1],10)*60+parseInt(m[2],10)) : null; };
+const overlap = (a1,a2,b1,b2) => Math.max(0, Math.min(a2,b2)-Math.max(a1,b1));
+function roundClaimMins(otMins, rule){
+  if(rule==='nearest1')   return Math.round(otMins/60)*60;
+  if(rule==='ceil1')      return Math.ceil(otMins/60)*60;
+  if(rule==='nearest0.5') return Math.round(otMins/30)*30;
+  return Math.floor(otMins/60)*60;
+}
+function standardEnd(inM){ // 8h + 若跨午休再 +1h
+  const e = inM + 8*60;
+  const crosses = overlap(inM, e, 12*60, 13*60) > 0;
+  return e + (crosses ? 60 : 0);
+}
+function weekKey(dateStr){
+  const d = new Date(dateStr+"T00:00:00"); const day=(d.getUTCDay()+6)%7;
+  d.setUTCDate(d.getUTCDate()-day+3); const firstThu=new Date(Date.UTC(d.getUTCFullYear(),0,4));
+  const wk = 1 + Math.round(((d-firstThu)/86400000 - 3 + ((firstThu.getUTCDay()+6)%7))/7);
+  return d.getUTCFullYear()+"-W"+String(wk).padStart(2,'0');
+}
+function dayNameIdx(dateStr){ const d=new Date(dateStr+"T00:00:00"); return (d.getDay()+6)%7; }
+
+// ----- DOM -----
+const tbody=$('#tbody'), cards=$('#cards'), weekBoard=$('#weekBoard');
+function el(tag,attrs={},children=[]){const n=document.createElement(tag);Object.entries(attrs).forEach(([k,v])=>(k in n)?n[k]=v:n.setAttribute(k,v));[].concat(children).forEach(c=>n.append(c));return n;}
+function addRow(d='',i='',o='',note=''){
+  const tr=document.createElement('tr');
+  const td1=document.createElement('td'); td1.appendChild(el('input',{type:'text',placeholder:'2025-10-12',value:d}));
+  const td2=document.createElement('td'); td2.appendChild(el('input',{type:'text',placeholder:'08:00',value:i}));
+  const td3=document.createElement('td'); td3.appendChild(el('input',{type:'text',placeholder:'20:00',value:o}));
+  const td4=document.createElement('td'); td4.appendChild(el('input',{type:'text',placeholder:(lang==='zh'?'可留白':lang==='ja'?'任意':'optional'),value:note}));
+  const td5=document.createElement('td'); td5.appendChild(el('button',{className:'btn danger',onclick:()=>tr.remove()},[L().del]));
+  tr.append(td1,td2,td3,td4,td5); tbody.appendChild(tr);
+}
+addRow();
+$('#addRowBtn').onclick=()=>addRow();
+$('#resetBtn').onclick=()=>{tbody.innerHTML='';cards.innerHTML='';weekBoard.innerHTML='';addRow();};
+$('#sampleBtn').onclick=()=>{tbody.innerHTML='';addRow('2025-10-12','08:00','20:00','sample A');};
+
+// ----- lang toggle -----
+function applyLang(){
+  document.title = L().appTitle;
+  $('#titleText').textContent = L().appTitle.replace(/ v[\d.]+$/,'').replace('Albert-Style ','') + ' — Albert Style';
+  $('#ruleLine').textContent= L().rule;
+  $('#hInput').textContent= L().input; $('#hResult').textContent= L().result; $('#hWeek').textContent= L().week;
+  $('#addRowBtn').textContent=L().add; $('#sampleBtn').textContent=L().load; $('#resetBtn').textContent=L().reset; $('#calcBtn').textContent=L().calc; $('#exportBtn').textContent=L().export;
+  $('#thDate').textContent=L().date; $('#thIn').textContent=L().in; $('#thOut').textContent=L().out; $('#thNote').textContent=L().note; $('#thAct').textContent=L().act;
+  $('#lbStd').textContent=L().std; $('#lbLunch').textContent=L().lunch; $('#lbDinner').textContent=L().dinner; $('#lbRound').textContent=L().round; $('#lbMin').textContent=L().min;
+  $('#kDaysT').textContent=L().days; $('#kNetT').textContent=L().tnet; $('#kOTT').textContent=L().tot; $('#kClaimT').textContent=L().tclaim;
+  document.querySelectorAll('tbody tr').forEach(tr=>{ tr.querySelectorAll('td input')[3].placeholder = (lang==='zh'?'可留白':lang==='ja'?'任意':'optional'); tr.querySelector('button').textContent=L().del; });
+  $('#footerText').textContent=L().footer;
+}
+['#lang-zh','#lang-en','#lang-ja'].forEach(sel=>{
+  document.querySelector(sel).onclick=()=>{
+    lang = sel==='#lang-en'?'en':(sel==='#lang-ja'?'ja':'zh');
+    ['#lang-zh','#lang-en','#lang-ja'].forEach(s=>document.querySelector(s).classList.remove('active'));
+    document.querySelector(sel).classList.add('active'); applyLang();
+  };
+});
+applyLang();
+
+// ----- theme click binding -----
+document.querySelectorAll('#themeBar .sw').forEach(b=>{
+  b.onclick=()=>{ document.body.style.background = themes[b.dataset.theme];
+                  document.querySelectorAll('#themeBar .sw').forEach(x=>x.classList.remove('active'));
+                  b.classList.add('active'); };
+});
+
+// ----- calculate + CSV -----
+let lastRows = [];
+document.getElementById('calcBtn').onclick=()=>{
+  const dinnerM = Math.round(parseFloat(document.getElementById('dinnerHrs').value||'0.5')*60);
+  const minClaimM = Math.round(parseFloat(document.getElementById('minOt').value||'1')*60);
+  const rule = document.getElementById('roundRule').value;
+
+  const rows=[...tbody.querySelectorAll('tr')].map(tr=>{
+    const [d,i,o,n] = [...tr.querySelectorAll('input')].map(x=>x.value.trim());
+    const inM  = toMins(i), outM = toMins(o);
+    if(!d || inM===null || outM===null || outM<=inM) return null;
+
+    const stdEnd = standardEnd(inM);      // 定時
+    const otStart = stdEnd + dinnerM;     // 晚餐後開始算 OT
+    const otM = Math.max(0, outM - otStart);
+    const claimM = (otM < minClaimM) ? 0 : Math.max(minClaimM, roundClaimMins(otM, rule));
+
+    const totalM = outM - inM;
+    const lunchM = overlap(inM, outM, 12*60, 13*60)>0 ? 60 : 0;
+    const netM = Math.max(0,totalM - lunchM);
+
+    return {d,i,o,n,inM,outM,stdEnd,otStart,otM,claimM,totalM,lunchM,netM,wk:weekKey(d),dayIdx:dayNameIdx(d)};
+  }).filter(Boolean);
+
+  lastRows = rows.slice();
+
+  cards.innerHTML='';
+  if(!rows.length){
+    cards.innerHTML = `<div class="muted">${lang==='zh'?'沒有有效資料':lang==='ja'?'データなし':'No data'}</div>`;
+    weekBoard.innerHTML=''; ['kDays','kNet','kOT','kClaim'].forEach(id=>$('#'+id).textContent = id==='kClaim'?'0':'00:00'); return;
+  }
+  const sumOT    = rows.reduce((a,r)=>a+r.otM,0);
+  const sumClaim = rows.reduce((a,r)=>a+r.claimM,0);
+  const sumNet   = rows.reduce((a,r)=>a+r.netM,0);
+  $('#kDays').textContent = String(rows.length);
+  $('#kNet').textContent  = fmtHM(sumNet);
+  $('#kOT').textContent   = fmtHM(sumOT);
+  $('#kClaim').textContent= String(Math.round(sumClaim/60));
+
+  rows.forEach(r=>{
+    const c = el('div',{className:'card'},[
+      el('div',{className:'muted'},[r.d]),
+      el('div',{className:'big'},[`OT ${fmtHM(r.otM)}  →  Claim ${Math.round(r.claimM/60)} h`]),
+      el('div',{},[`${i18n[lang].card.stdEnd} ${fmtHM(r.stdEnd%(24*60))} · ${i18n[lang].card.otWin} ${fmtHM(r.otStart%(24*60))} – ${fmtHM(r.outM%(24*60))}`]),
+      el('div',{className:'sep'}),
+      el('div',{},[`${i18n[lang].card.work} ${fmtHM(r.netM)} · ${i18n[lang].card.total} ${fmtHM(r.totalM)} · ${i18n[lang].card.lunch} ${fmtHM(r.lunchM)}`]),
+      r.n?el('div',{className:'sep'}):'', r.n?el('div',{},[(lang==='zh'?'備註: ':lang==='ja'?'メモ: ':'Note: '), r.n]):''
+    ]);
+    cards.appendChild(c);
+  });
+
+  // Weekly board (Mon–Sat)
+  const weeks={};
+  rows.forEach(r=>{
+    if(r.dayIdx===6) return; // skip Sunday
+    if(!weeks[r.wk]) weeks[r.wk]={days:[0,0,0,0,0,0], ot:0, claim:0, from:r.d, to:r.d};
+    weeks[r.wk].days[r.dayIdx]+=r.otM; weeks[r.wk].ot+=r.otM; weeks[r.wk].claim+=r.claimM;
+    if(r.d<weeks[r.wk].from) weeks[r.wk].from=r.d; if(r.d>weeks[r.wk].to) weeks[r.wk].to=r.d;
+  });
+  weekBoard.innerHTML='';
+  Object.entries(weeks).forEach(([k,w])=>{
+    const wrap=el('div',{className:'wcard'},[]);
+    wrap.append(el('div',{className:'whead'},[
+      el('div',{},[(lang==='zh'?i18n[lang].week.title.replace('{w}',k.split('W')[1]):i18n[lang].week.title.replace('{w}',k.split('W')[1])),' · ',w.from,' ~ ',w.to]),
+      el('div',{className:'badge'},[`${i18n[lang].week.total}: ${fmtHM(w.ot)} / ${i18n[lang].week.claim}: ${Math.round(w.claim/60)}h`])
+    ]));
+    const days=el('div',{},[]);
+    i18n[lang].week.daynames.forEach((name,idx)=>{
+      days.append(el('div',{className:'weekday'},[
+        el('div',{className:'name'},[name]),
+        el('div',{},[`${i18n[lang].week.ot}: ${fmtHM(w.days[idx])}`]),
+        el('div',{},[`${i18n[lang].week.claim}: ${Math.round(w.days[idx]/60)}h`])
+      ]));
+    });
+    wrap.append(days); weekBoard.append(wrap);
+  });
+};
+
+// CSV export
+document.getElementById('exportBtn').onclick=()=>{
+  if(!lastRows.length){ alert(lang==='zh'?'請先計算一次':lang==='ja'?'先に計算してください':'Please calculate first'); return; }
+  const header = ['Date','ClockIn','ClockOut','StdEnd','OTStart','OT(min)','OT(HH:MM)','Claim(h)','Note','Week'];
+  const lines = [header.join(',')];
+  lastRows.forEach(r=>{
+    lines.push([r.d,r.i,r.o,fmtHM(r.stdEnd%(24*60)),fmtHM(r.otStart%(24*60)),r.otM,fmtHM(r.otM),Math.round(r.claimM/60), `"${(r.n||'').replace(/"/g,'""')}"`, r.wk].join(','));
+  });
+  const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='OT_Export.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+};
+</script>
+</body>
+</html>
