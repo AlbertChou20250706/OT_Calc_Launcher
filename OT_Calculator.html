@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Albert-Style OT Calculator v1.3.0</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#10b981">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <style>
   :root{
     --bg:#0b1220; --panel:#0e162a; --muted:#93a4c2; --text:#eaf2ff;
@@ -397,6 +401,13 @@ document.getElementById('exportBtn').onclick=()=>{
   const a = document.createElement('a'); a.href=url; a.download='OT_Export.csv'; a.click();
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
 };
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(console.error);
+  });
+}
 </script>
 </body>
 </html>

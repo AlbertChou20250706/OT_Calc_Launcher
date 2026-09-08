@@ -1,0 +1,15 @@
+{
+  "name": "OT Calculator - AlbertBiahal",
+  "short_name": "OT Calculator",
+  "description": "Albert-Style OT 加班時數計算機：8h 標準工時判斷、跨午休 +1h、晚餐後起算 OT、Claim 進位規則、三語切換、週彙總、CSV 匯出。",
+  "start_url": "./OT_Calculator.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#10b981",
+  "lang": "zh-Hant",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
