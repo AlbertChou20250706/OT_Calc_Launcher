@@ -1,5 +1,10 @@
 # Albert-Style OT Calculator
 
+[![Get it from Microsoft](https://get.microsoft.com/images/en-us%20dark.svg)](https://apps.microsoft.com/detail/9NKGTSLTN8RN)
+
+- 🖥️ **Windows App（推薦）**：[從 Microsoft Store 下載](https://apps.microsoft.com/detail/9NKGTSLTN8RN) — 免安裝設定、自動更新
+- 🌐 **線上直接使用**：[open OT_Calculator.html on GitHub Pages](https://albertchou20250706.github.io/OT_Calc_Launcher/OT_Calculator.html)
+
 **Version:** v1.3.0  
 **Files:**
 - `OT_Calculator.html` — 主程式（離線可用，三語、CSV、週彙總、6 主題）
